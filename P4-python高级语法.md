@@ -71,3 +71,77 @@ def fun1(a, *args, **kwargs):
 
 fun1（1， 2， 3， name="yihao", age="16")
 ```
+
+### 类与方法
+1.类的实例创建过程，例：调用 instance1 = Class1(args)的时候
+1. 先调用\_\_new__创建instance1实例对象（开辟一块内存空间供其使用）
+2. 调用\_\_init\_\_,(对这片空间初始化，空间地址内原来的数据不再有效，而存入新的数据）此时self指向instance1对象，并将args赋予给self.arg,即instance1.arg
+
+\_\_class__属性指向类对象（唯一）,作用：记录类对象的地址 。
+
+```python
+# 类方法
+@classmethod
+def class_fun(cls):  # 此处为cls而非self，可以指向类属性和类方法
+    pass
+```
+
+property属性的创建
+* 方法1：装饰器--从调用方法改成像调用一个属性值，使用方便。相当于将 fun(),fun_arg_setter(),fun_arg_deleter()三个函数改为了一个属性值fun便于调用（但与函数调用方式略有不同）
+
+```python
+@property  # 获取属性值
+def fun2(self):  # 只有self参数，不需要传其他参数,self.original_value在__init__中已设定
+    new_value = some_function(self.original_value)
+    return new_value
+
+@fun2.setter
+def fun2(self, value):
+    self.original_value = value  # 修改原始值后，instance1.fun2会重新调用fun2函数
+
+@fun2.deleter
+def fun2(self):
+    del self.init_value
+
+# 上3个函数使用下三句语句调用
+instance1.fun2  # 获取属性值，不需要括号
+
+instance1.fun2 = value  # 设置__init__属性值， 传入参数。
+# 由于不同于下面函数的调用方式（参数传入方式），value只能是1个值或列表等而不能是多个值
+def price(value2, value_3):
+    o_value, discount = value2, value_3
+    print(o_value,discount)
+# instance1.fun2 = value2, value3 这种方式会出错
+    
+del instance1.fun2  # 删除属性值
+# 删除后，可再次用instance1.fun2 = value设置init属性值
+```
+
+* 方法2：类属性
+先创建fun(),fun_arg_setter(),fun_arg_deleter()3个函数
+
+```python
+#在类中创建1个类属性class_prop
+class_prop = property(fun,fun_arg_setter,fun_arg_deleter, "docstring")
+# 调用与装饰器相同，将fun2 替换为 类属性class_prop 即可
+instance1.fun2
+instance1.fun2 = value
+del instance1.fun2
+```
+### 上下文管理器
+> 任何实现了__enter__()和__exit__()方法的对象都可称为上下文管理器，enter返回资源对象，exit进行清除
+例如with关键字
+
+
+也可使用@contextmanager装饰器进一步简化上下文管理器
+```python
+from contextlib import contextmanager
+@contextmanager
+def op(path, mode):
+    f = open(path, mode)
+    yield f
+    f.close()
+with op('out.txt', 'w') as f:  # op('out.txt', 'w')返回值为f
+    f.write("someword")
+```
+通过yield实现，yield之前的语句在__enter__()中执行，yield之后的语句在__exit__()中执行。yield获得函数返回值就是下边调用的返回值。

@@ -17,6 +17,7 @@ recv(data.decode("UTF-8"))
 ### queue队列： multiprocessing.Queue 完成进程间通信，例如socket 
 一个进程产生数据，通过queue传递给另一个进程
 参考[process][lk2]
+
 [lk2]: https://github.com/martinhunter/py-record/tree/master/reffiles/multi_processing.py
 
 ### 进程池 multiprocessing.Pool,用来生成多个进程代替multingprocessing.Process
@@ -33,6 +34,7 @@ po.join()  # wait till these 10 process finish their work
 ```
 ### 协程，是并发任务，C++中没有，利用迭代器实现
 参考[iterator][lk3]
+
 [lk3]: https://github.com/martinhunter/py-record/tree/master/reffiles/iterator1.py
 生成器（一种迭代器）： 将函数中的return换成yield，运行时创建了一个生成器对象
 > 保证函数执行一部分便返回

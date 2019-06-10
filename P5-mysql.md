@@ -119,7 +119,8 @@ conn.rollback()  # 取消这条语句到上一个conn.commit()间的所有修改
 cur1.close()  # 这两条写到__delete__方法中，自动调用
 conn.close()
 ```
-防止SQL注入，巫云
+### 防止SQL注入，巫云
+> 可构造一个列表或元组存储外界输入信息
 qe = input("输入商品名")
 sql = """select * from goods where name='%s'"""
 curs1.excecute(sql, [qe])  // 构造参数列表

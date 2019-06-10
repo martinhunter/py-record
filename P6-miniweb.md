@@ -89,3 +89,73 @@ tes1()
 SEO：搜索引擎优化
 伪静态（url rewrite）：和静态url类似，其实是动态伪装成静态
 缺点：服务器要支持重写规则，负担增加。可以robots禁止掉动态地址
+
+
+### 面向切面
+功能已完善，只需要写函数加上已有的装饰器就能添加新功能，用原本的框架自动调用
+
+#### url编解码，排除特殊符号
+import urllib.parse
+urllib.parse.quote("中国")
+输出'%E4%B8...'
+urllib.parse.quote('%E4%B8...')
+输出'中国'
+
+#### log日志.5个等级
+import logging
+logging.basicConfig(level=logging.WARNING，
+filename='./log.txt',filemode='w',
+format='%(asctime)s - %(filename)s[line:%(lineno)d]-%(levelname)s')  # 设置默认等级。
+
+### 元类,类比装饰器
+> 通常用于将输入的类属性改变为字典或改变其大小写等。 
+> 使用元类创建类,系统会先自动将所写类的class_name, class_parents,class_attr
+传入type，然后系统调用type再空间中创建一个类对象。
+
+New_class = type("Original_class_name"，由父类名称组成的元组，包含类属性的字典(名称和值))
+使用help（New_class）依然指向Original_class_name
+
+类是一组描述如何生成一个对象的代码块。
+使用globals()，其中是字典，保存了所有全局变量
+xx = globals()
+xx['__builtin__']获得默认加载的内建模块
+xx['__builtin__'].print()能调用print
+
+> 动态创建类：不调用默认的type创建类
+
+```python
+def infunc():
+    pass
+New_class = type("Original_class_name",(),{"cls_prop":val1,"infunc":infuc}
+
+
+def upperattr(class_name, class_parents,class_attr):
+    newattr = {}
+    for name,value in class_attr.items():
+        if not name.startwith("__"):
+            new_attr[name.upper()] = value
+    return type(class_name, class_parents,class_attr)
+
+此时类调用属性时，所写的类属性可以是大写或小写,但调用时必须大写。
+class Up(object, metaclass=upperattr):
+    pass
+insUp = Up()
+insUp.ATTR
+
+# 上边的函数也可放到类中
+class Upperattr(type):
+    def __new__(cls,class_name, class_parents,class_attr):
+        newattr = {}
+        for name,value in class_attr.items():
+            if not name.startwith("__"):
+                new_attr[name.upper()] = value
+        return type(class_name, class_parents,class_attr)
+        # return type.__new__(cls, class_name, class_parents,class_attr)         
+```
+
+### 元类实现django中的ORM
+> 创建类对应表 来代替原有的sql
+
+def __init__(self, **kwargs):
+    for name, value in kwargs.items():
+        setattr(self, name, value) # 设置名称及值，而不能self.name = value

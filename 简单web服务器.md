@@ -13,10 +13,18 @@ re.search(r"pattern", string)  # 匹配string中遇到的第一个符合条件�
     re.sub(r"\d+", add, "python = 992")  # 根据实际用函数动态替换所有符合的内容
 
 ### http协议
+> 若服务器对请求返回302及新地址，就会自动重定向。
+
+http连接：
+1. 先解析域名获得IP地址
+2. 进行3次握手，4次挥手
+3. 服务器返回http内容 
+
+交给网关，mac地址变，ip不变。
 格式：头文件（header)\r\n\r\n正文(body)<!DOCTYPE html>...
 阿里妈妈放广告
 
-### tcp3次握手，4次回收
+### tcp3次握手，4次挥手
 3次握手开始于client_socket.connect()
 1. client发送如 syn 11，（server接收到syn 11后加1，将其变为ack 12）
 2. server发送ack12 和如 syn 45

@@ -60,7 +60,7 @@ generate_next_value = gen_obj.send(args)  # yield value整个 = args "generate_n
         while True:
             next(t1)
             next(t2)
-使用greenlet.greenlet替换yield,但若有延时这两种方法都会等待而不切换。还是人工切换
+使用greenlet.greenlet替换yield,但若有延时(例如time.sleep(0.5)这两种方法都会等待而不切换。还是人工切换
 
     def func1(args):
         while True:
@@ -79,19 +79,19 @@ generate_next_value = gen_obj.send(args)  # yield value整个 = args "generate_n
     import gevent
     from gevent import monkey
     monkey.patch_all()  # 将程序中用到的耗时操作的代码（time.sleep)换为gevent中自己实现的模块
-    def func1(args):
+    def func1(args1):
         while True:
             pass
-            gevent.getcurrent()
+            print（"func1 running"）
             time.sleep(0.5)
-    def func2(args):
+    def func2(args2):
         while True:
             pass
-            gevent.getcurrent()
+            print（"func2 running"）
             time.sleep(0.5)
     def main():
-        gev1 = gevent.spawn(func1， args)
-        gev2 = gevent.spawn(func2， args)
+        gev1 = gevent.spawn(func1， args1)
+        gev2 = gevent.spawn(func2， args2)
         gev1.join()
         gev2.join()
         gevent.joinall([gev1, gev2])  # join可替换为joinall

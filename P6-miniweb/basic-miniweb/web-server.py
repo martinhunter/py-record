@@ -15,11 +15,13 @@ class WSGIServer(object):
         self.staticpath = staticpath
 
     def service_client(self, new_socket):
+        '''找到所请求的目标文件所在路径'''
         request = new_socket.recv(1024).decode("utf-8")
         request_lines = request.splitlines()
         print("")
         print(">"*20)
         print(request_lines)
+        
 
         file_name = ""
         ret = re.match(r"[^/]+(/[^ ]*)", request_lines[0])
@@ -55,10 +57,14 @@ class WSGIServer(object):
             header += "\r\n"
             response = header + body
             new_socket.send(response.encode("utf-8"))
+            
+        new_socket.close()
 
     def set_response_header(self, status, headers):
+        '''函数传递给application并由框架中的application函数设置status和headers'''
         self.status = status
         self.headers = headers
+        
     def main_run(self):
         while True:
             new_socket, client_addr = self.tcp_server_socket.accept()
@@ -69,6 +75,7 @@ class WSGIServer(object):
 
 
 def main():
+    '''传入参数port，框架名称，框架名称下的application函数'''
     if len(sys.argv) == 3:
         try:
             port = int(sys.argv[1])

@@ -133,7 +133,7 @@ epl = select.epoll()
 epl.register(tcp_server.fileno(), select.EPOLLIN)  # 将监听套接字对应的fd注册到epl中, select.EPOLLIN表示等待外界传输数据
 fd_event_dict = {}
 while True:
-    fd_event_list = epl.poll()  # 默认堵塞， os检测到数据到来，通过事件通知解堵塞，其值是多个元组形成的列表。
+    fd_event_list = epl.poll()  # 默认堵塞， os检测到数据到来，通过事件通知解堵塞，其值是多个元组(每个元祖2个元素）形成的列表。
     for fd, event in fd_event_list:
         if fd == tcp_server.filno():
             new_socket, addr = tcp_server.accept()

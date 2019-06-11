@@ -1,4 +1,5 @@
 ### re-rules
+```python
 ret = re.match(r"pattern", string)  # pattern需要从string头开始匹配
 ret.group(number)  # 括号从外往内数， number默认为0，代表整个匹配值
 re.match(r"(?P<name1>\d*).*(?P=name1)"
@@ -11,6 +12,7 @@ re.search(r"pattern", string)  # 匹配string中遇到的第一个符合条件�
         return str(num)
         
     re.sub(r"\d+", add, "python = 992")  # 根据实际用函数动态替换所有符合的内容
+```
 
 ### http协议
 > 若服务器对请求返回302及新地址，就会自动重定向。

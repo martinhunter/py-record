@@ -7,9 +7,9 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 
 登陆: mysql -uroot -pmysql
 
-显示已有数据库： show databases;  // 以；结束命令输入
-查看语句具体进行的操作，使用show： show create database base_name charset=utf8;
-显示时间，版本： select now(); select version();  // 使用select选择函数来显示，而非show
+* 显示已有数据库： show databases;  // 以；结束命令输入
+* 查看语句具体进行的操作，使用show： show create database base_name charset=utf8;
+* 显示时间，版本： select now(); select version();  // 使用select选择函数来显示，而非show
 
 1.数据库操作
 * 注释： -- 注释内容
@@ -19,10 +19,10 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 显示当前使用中的数据库名称： select database();  // 需先用use使用数据库。
 
 2.
-显示当前数据库的所有数据表： show tables;
-创建数据表: create table [if not exist ]table_name(字段 类型 约束[, 字段 类型 约束]) [select语句];  // int unsigned
-删除数据表： drop table table_name
-查看表格本身（而非表中数据）的结构： desc table_name;  // desc是describe的缩写？
+* 显示当前数据库的所有数据表： show tables;
+* 创建数据表: create table [if not exist ]table_name(字段 类型 约束[, 字段 类型 约束]) [select语句];  // int unsigned
+* 删除数据表： drop table table_name
+* 查看表格本身（而非表中数据）的结构： desc table_name;  // desc是describe的缩写？
 
 3.修改表格结构（alter）
 * 增加字段： alter table table_name add 字段名 类型即约束；

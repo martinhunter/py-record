@@ -1,6 +1,6 @@
 python高级语法
 ***
-### GIL（全局解释器锁）
+### GIL（全局解释器锁）,导入C语言代码
 > 每个线程在执行过程中先获取GIL，保证同一时刻只有一个线程可以执行代码。
 > 线程释放GIL锁： 在I/O等可能引起阻塞的system call之前，可暂时释放GIL锁（执行时间到达阈值后，当前线程释放GIL。
 
@@ -26,10 +26,10 @@ t = Thread(target=lib.funcname)  # 加载文件中的函数
 ### 深拷贝（copy.deepcopy)与浅拷贝（copy.copy),
 b = [[1, 2], [3, 4, 5]]  // #id(b)是变量b地址处的数据（值）
 1. a = b 时，变量a和b地址处的数据相同，即&a == &b, 这个数据是layer1（目标列表对象的地址值）。
-2. a = copy.copy(b) 此时a变量地址值中的数据是layer1指向的数据，这个数据是layer2（1个或多个地址值)，a在new layer1（新地址值）复制了一份layer2。此时b通过layer1改变layer2(比如增加或删除layer2的一些值）时，a中的new layer1依然指向原有的layer2，b中增加此处并不增加，b中删除layer2中地址，由于依然有a指向这个地址所以这个地址并没有被真正删除。
+2. a = copy.copy(b) 此时a变量地址值中的数据是layer1指向的数据，（a在1个新空间中复制了b中所有元素的地址，此时&a != &b，但&a.elment1 != &b.element2）这个数据是layer2（1个或多个地址值)，a在new layer1（新地址值）复制了一份layer2。此时b通过layer1改变layer2(比如增加或删除layer2的一些值）时，a中的new layer1依然指向原有的layer2，b中增加此处并不增加，b中删除layer2中地址，由于依然有a指向这个地址所以这个地址并没有被真正删除。
 3. a = copy.deepcopy(b) 更深入一层，将layerFinal（所有地址值指向的最终数据）复制了一份new layerFinal到新的地址中，因此a中的所有地址值都是新的。此时b中的layer1，layer2...layerFinal改变都不会影响到a。
 
-当copy.copy拷贝元组时，与 a = b 效果相同
+当copy.copy拷贝元组时，由于元组值是不可变的，因此与 a = b 效果相同。
 a = copy.copy(b) 与 a = b[:] 效果相同
 
 ### 私有化，import，封装

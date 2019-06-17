@@ -1,6 +1,10 @@
 ### WSGI协议，miniweb框架介绍
 > 配置服务器，用来处理动态请求。参考 [miniweb服务器]，[miniweb框架]。
-miniweb框架用application(environ, start_response)函数处理外部动态请求
+
+1. miniweb框架用application(environ, start_response)函数处理外部动态请求，返回body值。
+2. environ:一个包含所有http请求的dict对象。
+3. start_response: 一个发送HTTP响应内容的函数。存储application中设置的status和header。
+start_response的`status+header`+application返回的`body`构成服务器的返回信息
 
 [miniweb服务器]: .\P6-miniweb\basic-miniweb\web-server.py
 [miniweb框架]: .\P6-miniweb\basic-miniweb\dynamic\mini_web.py

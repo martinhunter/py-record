@@ -62,7 +62,7 @@ visible hidden scroll auto inherit(从父类继承overflow属性，较少使用�
 
 #### display
 元素就是标签
-1. 块元素（又称行元素）：div, h1, p ,ul 等 支持全部样式，占据一行
+1. 块元素（又称行元素）：div, h1, p, ul， li 等 支持全部样式，占据一行
 2. 内联元素（又称行内元素）： a, span, em 不支持高宽，margin和padding的上下，不占一行，盒子间会产生间距（父级元素的font-size设为0，子元素设置font-size来取消间距）。父元素使用text-align设置子元素的水平对齐方式。
 3. 内联块元素：img，input，使用display将其他转换为这种元素。支持全部样式，（可设置宽高），其他同内联元素
 
@@ -98,3 +98,5 @@ inline-block： 内联块元素显示
 5. inherit:从父级继承position属性。
 
 使用z-index:6设置元素层级
+
+

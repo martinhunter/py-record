@@ -246,3 +246,170 @@ clientHeight：页面可视区域高度
 window.onscroll=function (){
     var scrollTop=document.documentElement.scrollTop||document.body.scrollTop;  //写2种以兼容不同浏览器。
 };
+```
+
+# JavaScript 运行机制详解：Event Loop（指主线程从"任务(事件）队列"中循环不断地读取事件）
+[来源](http://ju.outofmemory.cn/entry/95512)
+异步执行的运行机制如下:(只要主线程空了，就会去读取"任务队列")
+1. 所有同步任务都在主线程上执行，形成一个执行栈（execution context stack）。
+2. 主线程之外，还存在一个"任务队列"（task queue）(event queue)。只要异步任务有了运行结果，就在"任务队列"之中放置一个事件。("任务队列"除了IO设备的事件以外，还包括一些用户产生的事件（比如鼠标点击、页面滚动等等),只要指定过回调函数，这些事件发生时就会进入"任务队列")。
+3. 一旦"执行栈"中的所有同步任务执行完毕，系统就会读取"任务队列"，看看里面有哪些事件。哪些对应的异步任务，于是结束等待状态，进入执行栈，开始执行。
+4. 主线程不断重复上面的第三步。
+
+> "回调函数"（callback）:就是那些会被主线程挂起来的代码。异步任务必须指定回调函数，当主线程开始执行异步任务，就是执行对应的回调函数。
+
+### 运行过程
+1. for循环置入栈，并被执行，i=0，执行alert(100)，alert出栈
+2. lis[0].onclick置入栈，不执行，出栈，置入webapi监听
+(若为setInterval(func,1000)则会置入webapi，并生成计时器，在1后自动置入task queue）
+3. 执行i++，i=1，执行alert(101)，alert出栈
+4. lis[1].onclick置入栈，不执行，出栈，置入webapi监听
+5. 执行i++，i=2，执行alert(102)，alert出栈
+6. lis[2].onclick置入栈，不执行，出栈，置入webapi监听
+7. 循环4次，执行完所有同步任务，此时i=3
+8. 若没有点击事件，无事发生。若lis[2]被点击，lis[2].onclick被置入task queue中，lis[1]被点击，
+lis[1].onclick被置入task queue中，且排在lis[2]之后。
+9. event loop检测到task queue不为空，将lis[2].onclick入栈，执行tupian.src=arr[i]，此时i=3,执行完成后出栈
+10. event loop检测到task queue不为空，将lis[1].onclick入栈，执行完成后出栈.
+11. event loop检测到task queue为空，等待新任务。
+
+
+```javascript
+for （var i=0；i<arr.length; i++){
+    alert(i+100)；
+    lis[i].onclick=function(){
+        tupian.src=arr[i]
+    }
+}
+//解决方法1，对每个i作为属性存储。
+for（var i=0；i<arr.length; i++){
+    lis[i].index=i;
+    lis[i].onclick=function(){
+        tupian.src=arr[this.index];
+    }
+}
+//解决方法2，给事件套自调用函数（闭包函数）
+for（var i=0；i<arr.length; i++){
+    (function (i){
+        lis[i].onclick=function(){
+            tupian.src=arr[i];
+        }
+    })(i)
+}
+//or
+for（var i=0；i<arr.length; i++){
+    lis[i].onclick=(function(i){
+        return function(){
+            tupian.src=arr[i];
+        }
+    })(i)
+}
+```
+
+### js事件
+事件冒泡，例如元素有onclick函数被触发，onclick事件会传递给父级触发父级的onclick函数，再传递给更上一级，直到触发document的onclick函数。
+
+```html
+oBtn.onclick=function(ev){
+    var oEvent=ev||event;
+    //做一些事情
+    oEvent.cancelBubble=true;  //取消冒泡，不触发上层的onclick
+}
+
+//获取鼠标位置
+function getPos(ev){
+    var oEvent=ev||event;
+    var scrollTop=document.documentElement.scrollTop||document.body.scrollTop
+    var scrollLeft=document.documentElement.scrollLeft||document.body.scrollLeft
+    return {x:oEvent.clientX+scrollLeft,y:oEvent.clientY+scrollTop}
+}
+
+//获取键盘事件
+var document.onkeydown=function(ev){
+    var oEvent=ev||event;
+    oEvent.keyCode==37
+````
+
+##### 默认行为
+document.oncontextmenu=function(ev){var oEvent=ev||event;
+return false}取消显示鼠标右键内容
+oTextarea.onkeydown=function(){return false}文本框现无法输入
+
+```html
+oDiv.onmouseup=function (){
+    oDiv.onmousemove=null;
+    oDiv.onmouseup=null;
+}
+```
+
+### 面向对象（this）
+#### 阶段1
+创建空白对象
+创建构造函数（构造对象的函数）
+
+```html
+function CreateObject(param){
+    var obj=new Object();
+    obj.name='bl';
+    obj.q=param;
+    obj.firstFunction=function(){alert(this.name);};
+    return obj;
+}
+var objInstance1=CreateObject('param1');
+```
+#### 进阶
+原型prototype添加方法
+构造函数添加属性
+
+```html
+function CreateObject(param){
+    //创建新对象是系统自动调用var this=new Object();
+    
+    this.name='bl';
+    this.q=param;
+    //此时系统自动调用return this;
+}
+//实例共用prototype方法
+CreateObject.prototype.fnClick=function(){
+    this.aDiv[oBtn.index].style.display='block';
+}
+CreateObject.prototype.firstFunction=function(){
+    var _this=this;
+    //内部有其他调用时需要选择正确的this。
+    this.aBtn[i].onclick=function(){
+        _this.fnClick();
+    }
+    alert(this.name);
+};
+var objInstance1=new CreateObject('param1');
+```
+#### 使用json创建单个对象
+
+```html
+var json={
+    name:'name1',
+    func1:function(){};
+}
+json.name;
+json.func1();
+
+```
+#### 继承
+
+```html
+function A(par1,par2){
+    this.pro1=par1;
+    this.pro2=par2
+    }
+A.prototype.show=function(){};
+
+function B(od1,od2){
+    //使用call,this(即B)代替了A对象，并传入其他参数。实现继承
+    A.call(this，od1，od2);
+}
+
+//将A原型的所有方法传递给B继承
+for (var i in A.prototype){
+    B.prototype[i]=A.prototype[i]
+}
+```

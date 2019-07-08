@@ -28,6 +28,10 @@ line1(10)
 ```
 
 ### 装饰器：传递函数与数据
+> 每一层装饰器都传入一定的函数或数据作为内层的全局变量。每次只运行一部分函数，等待传入其他参数。
+用法：在def func1(param1)上添加@propertyname1，解释器遇到@propertyname1时会执行func1=propertyname1(func1).
+**赋值后左侧的func1指向propertyname1()的地址，此时右侧的func1变为一个指向原func1地址的匿名函数anonymousfunc1，不能再被直接调用。**
+然后调用func1(param1)函数时即调用propertyname1(anonymousfunc1)(param1).
 
 ```python
 # 这个闭包是一个通用装饰器
@@ -44,7 +48,7 @@ def tes1(param):
 
 tes1 = sf(tes1)  # 前边有@sf，这条就可以删除，原有调用不需修改
 
-tes1(param)
+tes1(param)=sf(tes1)(param)=call_func(param)=tes1(param)
 ```
 多个装饰器由下往上被装载，tes1(param)时由上往下被执行
 
@@ -78,13 +82,13 @@ def setlv(num):
         return call_func
     return sf
     
-@setlv(4)  # 会执行tes1 = setlv(num)(tes1),等价于tes1 = sf(tes1)且num=4。
+@setlv(4)  # 会执行tes1 = setlv(num)(tes1),等价于tes1 = sf(tes1)=call_func,已传入tes1且num=4。
 def tes1(param):
     print("old function")
     print(param)
 
 # 此时外界调用时不用也不能,没有权限设置参数
-tes1()
+tes1(param)=call_func(param)=print("new function added") 及调用tes1(param)
 ```
 
 ### url类型

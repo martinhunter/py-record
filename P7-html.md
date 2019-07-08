@@ -100,3 +100,41 @@ inline-block： 内联块元素显示
 使用z-index:6设置元素层级
 
 
+### 移动端适配
+#### retina屏幕（2倍或3倍的像素点）
+问题：1像素在retina上变为4像素或9像素，图片会自动补充差值，导致模糊
+解决：使用长度2或3倍大小的原始图片，并用css调整大小为1/2或1/3大小。
+#### background-size 调整填充样式
+#### 适配方式
+1. 全适配： 响应式布局+流体布局
+2. 移动端适配： 流体式布局+少量响应式，基于rem布局
+
+*流体布局*：使用百分比设置元素宽度，高度按固定值，边线无法用百分比
+解决：
+1. 使用 width: calcu(25%-4px);
+2. 元素css中增加box-sizing：border-box;
+
+*响应式布局*：查询浏览器宽度，使用不同的样式块
+```html
+.con div{
+        width:16%;
+        margin:1%;
+        box-sizing:borderbox;
+        }
+@media(max-width:960px){
+    .con div{
+        width:24%;
+        margin:1%;
+        }
+    }
+@media(max-width:480px){
+    .con div{
+        width:46%;
+        margin:2%;
+        }
+    }
+```
+*基于rem布局*：
+1. em：按元素自身文字大小设置尺寸
+2. rem：按根节点（html标签）文字大小设置尺寸
+<html style="font-size:20px;">

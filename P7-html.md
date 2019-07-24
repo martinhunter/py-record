@@ -1,6 +1,7 @@
 ### html
 
 #### html元素
+```
 <p></p> 段落并会有空行
 <br /> 换行
 段落中加多个空格，使用空格的字符实体&nbsp;
@@ -27,6 +28,7 @@
   <input type="radio" name="gender" value="woman" />
   <input type="submit" name="" value="submit_values" />  
 </form> 表单,会转到地址htttp://www.baidu.com?/username=input_content&gender=man
+```
 
 ### css
 1. 外联式<link rel="stylesheet" type="text/css" href="css/main.css" >
@@ -49,7 +51,7 @@
 #### margin技巧
 margin：50px auto; 左右居中
 margin-top：-10px; 设置负值，元素位移其边框合并
-margin-top：10px; margin-top合并：同层级元素都有margin，使用数值较大的margin的一个
+margin-top：10px; margin-top与margin-bottom合并：同层级元素下一个有margin-top，上一个有margin-bottom，使用数值较大的margin的一个
 margin-top：20px; margin-top塌陷：父子元素都有margin，使用数值较大的margin的一个
 解决margin-top塌陷
 1. 外部设置边框
@@ -64,12 +66,26 @@ visible hidden scroll auto inherit(从父类继承overflow属性，较少使用�
 元素就是标签
 1. 块元素（又称行元素）：div, h1, p, ul， li 等 支持全部样式，占据一行
 2. 内联元素（又称行内元素）： a, span, em 不支持高宽，margin和padding的上下，不占一行，盒子间会产生间距（父级元素的font-size设为0，子元素设置font-size来取消间距）。父元素使用text-align设置子元素的水平对齐方式。
-3. 内联块元素：img，input，使用display将其他转换为这种元素。支持全部样式，（可设置宽高），其他同内联元素
+3. 内联块元素：img，input，使用display将其他转换为这种元素。支持全部样式，不占据一行，（可设置宽高），其他同内联元素
 
 none: 元素隐藏且不占位置
 block： 块元素显示
 inline： 内联元素显示
 inline-block： 内联块元素显示
+
+
+***
+**特性**
+block元素始终占据父元素一整行，但可被float元素挡住，文字部分环绕（在float的元素后边）。block前后或之间的元素自行组成一行。
+例：2个block如div1和div2之间只有float元素,block自身贴合，而第一个float的top会贴合div1的margin底部，之后的依次排列。若div2与div3之间依然全为float，则div2，3间的float以及div2的文字会跟在div1，2间最后一个float元素后（block元素更低则贴合block）。
+
+float会与普通的inline，inline-block元素组成一行，且float都会在前而不论body中的顺序。
+例：每行的float和inline元素数量的确定方式。似乎会自动计算n个float元素总宽度和m个inline元素总宽度，两者之和最接近父元素宽度的排成一排。
+这排后边若是block元素则会贴合inline元素的bottom，若是inline、float元素则会贴合最后一个float元素的bottom。若最后一个float元素左侧还有bottom更低的float元素，则新元素会排在此更低float元素的右边，而非贴合父元素左侧。
+
+inline，inlineblock元素底部对齐，float元素顶部对齐。
+
+***
 
 #### float:left（变成内联块元素）
 1. 碰到父元素边界或其他元素才停止

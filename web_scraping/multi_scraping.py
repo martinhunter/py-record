@@ -52,7 +52,7 @@ for t in thread_list:
 # thread with queue -> data is distributed to all threads,and threads end simultaneously.
 
 class queuedThread(threading.Thread):
-	'''队列类'''	
+	'''线程+队列类'''	
     def __init__(self,name,q):
         self.name=name
         self.q = q
@@ -94,7 +94,7 @@ for t in thread_list2:
 print(multiprocessing.cpu_count())
 
 class myProcess(multiprocessing.process):
-	'''多线程类'''	
+	'''多进程类'''	
     def __init__(self,q):
         self.q = q
 

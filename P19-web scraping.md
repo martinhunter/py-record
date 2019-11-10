@@ -7,28 +7,28 @@
 [sp1](#A.0-the-essense-of-computer-science.)
 
 
-[sp12](#`procedures过程/程序`-are-going-to-be-the-way-of-talking-about-imperative-knowledge.)
+[sp12](#`procedures过程/程序`-are-going-to-be-the-way-of-talking-about-imperative-knowledge)
 
 
-[sp12](#procedures过程/程序-are-going-to-be-the-way-of-talking-about-imperative-knowledge.)
+[sp12](#procedures过程/程序-are-going-to-be-the-way-of-talking-about-imperative-knowledge)
 
 
-[sp14](#2.-conventional-interfaces--约定接口，可将符合接口标准的不同部分连接起来，并由此构建系统。)
+[sp14](#2-conventional-interfaces--约定接口，可将符合接口标准的不同部分连接起来，并由此构建系统。)
 
 
-[sp15](#\*-of-it.-\**)
+[sp15](#\*-of-it-\**)
 
 
-[sp15](#-of-it.-*)
+[sp15](#-of-it-*)
 
 
-[sp15](#\*-of-it.-\*)
+[sp15](#\*-of-it-\*)
 
 
-[sp15](#-of-it.-)
+[sp15](#-of-it-)
 
 
-[sp15](#of-it.)
+[sp15](#of-it)
 
 
 [sp1]()

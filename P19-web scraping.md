@@ -23,7 +23,7 @@ Chez Scheme作为练习环境： [Chez Scheme](https://cisco.github.io/ChezSchem
 
 important
 [1](##`Chris Strachey`将过程或是函数视为程序设计语言中的第一级元素)
-
+[3](#int)
 [2](##intro)
 
  C.0 Layered System ( Compound data(复合数据))，每层皆可替换。
@@ -109,6 +109,7 @@ To evaluate an application
 time = O(x)
 space = O(1)
 
+# int
 #### 迭代：iteration
 每一层都与上一层无关,上几层的数据丢失也不影响获得最终结果。
 #### 递归：recursion

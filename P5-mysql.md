@@ -1,11 +1,41 @@
-#### RDBMS(relational database management system)关系型数据库，包括mysql，oracle
+#### RDBMS(relational database management system)关系型数据库，包括mysql，oracle. [关系型数据库的起源](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)
 mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 
-* 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
-* 约束：主键（primary key）-物理上的存储顺序，外键（foreign key）-其他表的主键，非空（not null）， 唯一（unique，此字段的值不允许重复），默认（default）
-* 外键约束会减慢修改的速度。为保证有消息，可以在**逻辑层**进行控制。
 
-登陆: mysql -uroot -pmysql
+
+* 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
+
+* 主键（primary key） 性质：非空（not null）， 唯一（unique，此字段的值不允许重复），默认（default）
+* 外键（foreign key）与引用表相关联（此外键是引用表的主键）。不同主键可对应同一外键，但反过来不行。
+* 外键的作用：设定了可选值的集合，表格的外键仅可从此集合中获取值（除非为空值），而不能随意设置值
+* 组合键（composite key）：主键和其他列组合以生成一个唯一结果
+
+* 外键约束会减慢修改的速度。为保证有消息，可以在**逻辑层**进行控制。
+* 不区分大小写
+
+## 表关系
+
+一对一：2个表主键相同（主键和外键是同一个），其他列都不同，通常用于隔离机密信息，分隔后可加快查询，或避免空值插入
+
+一对多：普通表将引用表作为外键，引用表为一，普通表为多
+
+多对多：是前2者的集合。先创建一个中间表。中间表创建2个外键，引用2张表。
+
+## 规范化
+起因：表格过多，冗余导致插入更新删除行都操作困难。
+
+NOTE：规范化不是消除冗余，而是减少冗余。
+
+- 第一范式
+    - 列仅包含原子值（不能再细分），作者列的一个单元格不能放多个作者
+    - 没有重复的组（2个或多个逻辑相关联的列的集合），例如一本书有多个作者，不应创建多个作者列，因为作者是逻辑相关联的，只应创建一个
+    - solve：将author放入新的字表，创建多对多的关系
+- 第二范式
+    - 主键是一个列（关键字不是组合的）
+    - 没有重复的组（2个或多个逻辑相关联的列的集合），例如一本书有多个作者，不应创建多个作者列，因为作者是逻辑相关联的，只应创建一个
+    - solve：将author放入新的字表，创建多对多的关系
+
+登陆: mysql -u root -p mysql
 
 * 显示已有数据库： show databases;  // 以；结束命令输入
 * 查看语句具体进行的操作，使用show： show create database base_name charset=utf8;
@@ -25,10 +55,10 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 查看表格本身（而非表中数据）的结构： desc table_name;  // desc是describe的缩写？
 
 3.修改表格结构（alter）
-* 增加字段： alter table table_name add 字段名 类型即约束；
-* 修改字段： alter table table_name modifiy 字段名 类型即约束；
-* 修改已有字段为新字段： alter table table_name change 原字段 新字段名 类型即约束[ ,change 原字段 新字段名 类型即约束]；
-* 删除字段： alter table table_name drop 字段名 类型即约束；  // 会将数据一并删除
+* 增加字段： alter table table_name add 字段名 类型及约束；
+* 修改字段： alter table table_name modifiy 字段名 类型及约束；
+* 修改已有字段为新字段： alter table table_name change 原字段 新字段名 类型及约束[ ,change 原字段 新字段名 类型及约束]；
+* 删除字段： alter table table_name drop 字段名 类型及约束；  // 会将数据一并删除
 * **链接到外键**： alter table table_1 add foreign key (需要被外键约束的字段） references table_2 (table_2中的字段）；
 * **删除外键**： alter table table_1 drop foreign key 外键名称（需要先show create table table_1 找出外键约束名）；
 
@@ -154,7 +184,7 @@ commit；
 
 原理：不断缩小想要获得的数据的范围，同时把随机事件变成顺序事件。
 
-4.账户管理：
+4.账户管理(user也是一个数据库)：
 查看用户： desc user;
 * select host, user, authentication_string from user;
 创建账户并授予权限：

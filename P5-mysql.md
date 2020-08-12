@@ -12,7 +12,7 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
 [key类型](https://www.studytonight.com/dbms/database-key.php)。
 作用：每个key都是唯一的，如此可快速找到一条唯一记录，如此可仅对此此记录修改。
-每一列又可称为一个属性（attribute）
+
 * 主键（primary key） 性质：非空（not null）， 唯一（unique，此字段的值不允许重复），默认（default）
 * 外键（foreign key）与引用表相关联（此外键是引用表的主键）。不同主键可对应同一外键，但反过来不行。
 * 外键的作用：设定了可选值的集合，表格的外键仅可从此集合中获取值（除非为空值），而不能随意设置值
@@ -20,6 +20,10 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 候选键（candidate key，又可称为候选主键）: 1个或多个非主键的组合，能与主键一样定位一条唯一的记录，且使用最少的属性（无冗余）
 * 超键（super key）：1个或多个非主键的组合，能与主键一样定位一条唯一的记录，超键就是这些组合的集合
 * [复合键（composite key）](https://beginnersbook.com/2015/04/keys-in-dbms/)：2个或多个键组合生成一个唯一结果，能与主键一样定位一条唯一的记录。符合此条件的主键、超键、候选键都可称复合键
+
+* 每一列又可称为一个属性（attribute）
+* 主键属性：是候选键的一部分
+* 非主键属性：非候选键
 
 
 * 外键约束会减慢修改的速度。为保证有消息，可以在**逻辑层**进行控制。
@@ -34,27 +38,47 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 多对多：是前2者的集合。先创建一个中间表。中间表创建2个外键，引用2张表。
 
 ## 规范化
-起因：表格过多，冗余导致插入更新删除行都操作困难。
+起因：一个表格中过多列，冗余，导致插入更新删除行都操作困难。
+常用解决方法：将一个表拆分为多个表
 
 NOTE：规范化不是消除冗余，而是减少冗余。
 
 ### original
 
-book_id | publisher | title(primary key) | author | pub_date |
+book_id(primary key) | publisher | title | author | pub_date |
 --- | --- | --- | --- | --- |
 OSN21329 | Oraley | insight | Mark,Twin | 1947-4-7
 OSN21132 | Oraley | outsight | Mark,Town | 1952-4-15
 OSN21343 | BkTown | brief tour | Bill,Twin | 1947-4-24
 OSN21124 | Oraley | Great town | Mark,Alan,Willy | 1953-5-27
 
-### after 1st normal form
+### after 1st normal form.
 
-book_id(primary key) | publisher | title | pub_date |
---- | --- | --- | --- |
-OSN21329 | Oraley | insight | 1947-4-7
-OSN21132 | Oraley | outsight | 1952-4-15
-OSN21343 | BkTown | brief tour | 1947-4-24
-OSN21124 | Oraley | Great town | 1953-5-27
+> {title,author}组成候选键定位一条记录，但其他列与author无关，违反第二范式
+
+book_id | publisher | title | author | pub_date |
+--- | --- | --- | --- | --- |
+OSN21329 | Oraley | insight | Mark | 1947-4-7
+OSN21329 | Oraley | insight | Twin | 1947-4-7
+OSN21132 | Oraley | outsight | Mark | 1952-4-15
+OSN21132 | Oraley | outsight | Town | 1952-4-15
+OSN21343 | BkTown | brief tour | Bill | 1947-4-24
+OSN21343 | BkTown | brief tour | Twin | 1947-4-24
+OSN21124 | Oraley | Great town | Mark | 1953-5-27
+OSN21124 | Oraley | Great town | Alan | 1953-5-27
+OSN21124 | Oraley | Great town | Willy | 1953-5-27
+
+### after 2nd normal form，并增加一列出版社排行
+
+> pub_rank不是主键，且只依赖publisher（非主键，依赖于主键），与主键/候选键无关，违反了第三范式
+
+book_id(primary key) | publisher | title | pub_date | pub_rank | 
+--- | --- | --- | --- | --- |
+OSN21329 | Oraley | insight | 1947-4-7 | 1
+OSN21132 | Oraley | outsight | 1952-4-15 | 1
+OSN21343 | BkTown | brief tour | 1947-4-24 | 4
+OSN21124 | Oraley | Great town | 1953-5-27 | 1
+OSN21117 | Meeter | bulid palace | 1923-4-21 | 2
 
 title | author_id |
 --- | --- |
@@ -68,6 +92,8 @@ OSN21124 | 1
 OSN21124 | 5
 OSN21124 | 6
 
+> 可为作者设置id，以避免重名问题
+
 author_id(primary key) | author | Age | contry |
 --- | --- | --- | --- |
 1 | Mark | 26 | Ame
@@ -77,7 +103,47 @@ author_id(primary key) | author | Age | contry |
 5 | Alan | 37 | Japan
 6 | Willy | 42 | Germany
 
-每个范式（normal form）都先要满足前一个范式
+### after 3rd normal form
+
+> 将pub_rank列移出，并创建publisher表
+
+publisher | pub_rank |
+--- | --- |
+Oraley | 1
+Meeter | 2
+BkTown | 4
+
+### 第四范式前
+
+> name->address，hobby和course则多值依赖于name，且hobby与course互相独立
+
+name | address | hobby | course |
+--- | --- | --- | --- |
+Mar | Wall Street | piano | French
+Mar | Wall Street | piano | Chemistry
+Mar | Wall Street | baseball | French
+Mar | Wall Street | baseball | Chemistry
+Mar | Wall Street | reading | French
+Mar | Wall Street | reading | Chemistry
+
+solve: 以name为主键分为3张表
+
+### 符合第五范式的表
+
+supplier | product | customer |
+--- | --- | --- |
+KFC | chicken | Malin
+McNaldo | chicken | Pielo
+KFC | french fries | Pielo
+McNaldo | french fries | Nindo
+KFC | coffee | Pielo
+McNaldo | coffee | Shroud
+Walles | coffee | Nindo
+
+由于两两相关，必须要拆分成3张表才可
+但3张表再次组合却不会得到原来的表，而会多出许多（不在原表内的）信息
+
+### 每个范式（normal form）都先要满足前一个范式
 
 - 第一范式
     - 列仅包含原子值（不能再细分），作者列的一个单元格不能放多个作者
@@ -87,7 +153,7 @@ author_id(primary key) | author | Age | contry |
     - solve：简单方法在现有表中将1本书的多作者分成多列，复制多次书信息（其他行的）,但是违反了第二范式
     - solve2: 也可将author放入新的字表，创建多对多的关系
 - 第二范式
-    - 不是部分依赖的，而是完全依赖
+    - 不是部分依赖的，而是完全依赖。`A->B`表示B依赖于A,`{A,B}->C`表示C依赖于AB复合键
         - 依赖性/函数依赖（dependency/function dependency）：表格的所有其他列都通过主键获得,主键外的列并不能推得另外列的值
         - 完全依赖：列完全依赖了主键（候选键），而非部分
         - 部分依赖：列只依赖了主键（候选键）的一部分，而非其全部
@@ -97,13 +163,42 @@ author_id(primary key) | author | Age | contry |
     - 作用：更加清晰
 - 第三范式
     - 不能传递依赖（transitive dependency）
-        - 依赖传递：非主键列依赖于其他非主键列而非主键或候选键
-        - solve: 将此非主键列及依赖的非主键移出并创建新表，创建ID作为主键
+        - 依赖传递：A->B,但A,B都不是主键属性，但prime->A，因此称为传递依赖
+        - solve1: A是超键
+        - solve2: B是主键属性,但是违反Boyce-Codd范式
+        - solve problem: 将此非主键列及依赖的非主键移出并创建新表，创建ID作为主键
     -作用：减少数据复制
-- 关系模型不需要，但会用来避免冗余的高级范式
+- 更高级的范式：关系模型不需要，但会用来避免冗余的高级范式
 - Boyce-Codd范式（又称3.5范式，是第三范式的拓展）
     - 候选键列的一部分不能依赖于非主键列
-    - A是候选键的部分，B不是主键，若A依赖B，则B必须是super key
+    - solve: A是主键属性，B->A，则B必须是超键
+- 第四范式
+    - 不能多值依赖（Multi-valued Dependency）
+        - 多值依赖出现的条件：
+        - A->B,单一A值对应多个B值,可能就会有多值依赖
+        - 至少有3列
+- 第五范式
+    - 没有连接依赖（join Dependency）
+        - 连接依赖：将表格拆分，然后重组，依然能得到原表格，而信息不丢失
+        - 没有连接依赖的表格，拆分重组后，会信息丢失或创建新条目
+    - 没有连接依赖的表格说明已经到达最小的程度，已不可再分。
+    - 但不是所有的表格都要达到没有连接依赖的程度。
+    
+
+
+## 关系表示
+
+- preset: {A,B}组成候选键,C,D不是主键属性
+- 不符第2范式
+    - {A,B}->D; B->C
+    - solve: move B,C in new_table，B refered
+- 不符第3范式
+    - {A,B}->C; C->D
+    - solve1: move C,D in new_table, C refered
+    - solve2: {A,D}成为候选键，{A,D}->B; C->D
+- 不符第3.5范式
+    - {A,B}->D; C->B
+    - solve: move C,B in new_table, C refered
 
 
 ### 非规范化

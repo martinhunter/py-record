@@ -1,16 +1,13 @@
-#### RDBMS(relational database management system)
+## 关系型数据库, 基于关系模型
+> RDBMS(relational database management system)
 > 关系型数据库，包括mysql，oracle. [关系型数据库的起源](https://www.seas.upenn.edu/~zives/03f/cis550/codd.pdf)
 
 理论基础:集合论(set theory)
 
 原理： 每张表是一个集合，通合之间存在关系（如交集）
 
-mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
+#### [key](https://www.studytonight.com/dbms/database-key.php)
 
-
-
-* 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
-[key类型](https://www.studytonight.com/dbms/database-key.php)。
 作用：每个key都是唯一的，如此可快速找到一条唯一记录，如此可仅对此此记录修改。
 
 * 主键（primary key） 性质：非空（not null）， 唯一（unique，此字段的值不允许重复），默认（default）
@@ -25,11 +22,9 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 主键属性：是候选键的一部分
 * 非主键属性：非候选键
 
-
 * 外键约束会减慢修改的速度。为保证有消息，可以在**逻辑层**进行控制。
-* 不区分大小写
 
-## 表关系
+### 描述表的关系
 
 一对一：2个表主键相同（主键和外键是同一个），其他列都不同，通常用于隔离机密信息，分隔后可加快查询，或避免空值插入
 
@@ -37,13 +32,13 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 
 多对多：是前2者的集合。先创建一个中间表。中间表创建2个外键，引用2张表。
 
-## 规范化
+### 规范化
 起因：一个表格中过多列，冗余，导致插入更新删除行都操作困难。
 常用解决方法：将一个表拆分为多个表
 
 NOTE：规范化不是消除冗余，而是减少冗余。
 
-### original
+#### original
 
 book_id(primary key) | publisher | title | author | pub_date |
 --- | --- | --- | --- | --- |
@@ -52,7 +47,7 @@ OSN21132 | Oraley | outsight | Mark,Town | 1952-4-15
 OSN21343 | BkTown | brief tour | Bill,Twin | 1947-4-24
 OSN21124 | Oraley | Great town | Mark,Alan,Willy | 1953-5-27
 
-### after 1st normal form.
+#### after 1st normal form.
 
 > {title,author}组成候选键定位一条记录，但其他列与author无关，违反第二范式
 
@@ -68,7 +63,7 @@ OSN21124 | Oraley | Great town | Mark | 1953-5-27
 OSN21124 | Oraley | Great town | Alan | 1953-5-27
 OSN21124 | Oraley | Great town | Willy | 1953-5-27
 
-### after 2nd normal form，并增加一列出版社排行
+#### after 2nd normal form，并增加一列出版社排行
 
 > pub_rank不是主键，且只依赖publisher（非主键，依赖于主键），与主键/候选键无关，违反了第三范式
 
@@ -103,7 +98,7 @@ author_id(primary key) | author | Age | contry |
 5 | Alan | 37 | Japan
 6 | Willy | 42 | Germany
 
-### after 3rd normal form
+#### after 3rd normal form
 
 > 将pub_rank列移出，并创建publisher表
 
@@ -113,7 +108,7 @@ Oraley | 1
 Meeter | 2
 BkTown | 4
 
-### 第四范式前
+#### 第四范式前
 
 > name->address，hobby和course则多值依赖于name，且hobby与course互相独立
 
@@ -128,7 +123,7 @@ Mar | Wall Street | reading | Chemistry
 
 solve: 以name为主键分为3张表
 
-### 符合第五范式的表
+#### 符合第五范式的表
 
 supplier | product | customer |
 --- | --- | --- |
@@ -184,9 +179,7 @@ Walles | coffee | Nindo
     - 没有连接依赖的表格说明已经到达最小的程度，已不可再分。
     - 但不是所有的表格都要达到没有连接依赖的程度。
     
-
-
-## 关系表示
+### 关系表示
 
 - preset: {A,B}组成候选键,C,D不是主键属性
 - 不符第2范式
@@ -212,8 +205,12 @@ Walles | coffee | Nindo
 - 应当只用于插入（如日志），而不能用来更新已有数据
 
 
+## mySql
 
+* 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
+* 不区分大小写
 
+mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 登陆: mysql -u root -p mysql
 
 * 显示已有数据库： show databases;  // 以；结束命令输入

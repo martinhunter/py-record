@@ -38,12 +38,43 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 
 NOTE：规范化不是消除冗余，而是减少冗余。
 
+### original
+
 publisher | title(primary key) | author | pub_date |
 --- | --- | --- | --- |
 Oraley | insight | Mark,Twin | 1947-4-7
 Oraley | outsight | Mark,Town | 1952-4-15
 BkTown | brief tour | Bill,Twin | 1947-4-24
 Oraley | Great town | Mark,Alan,Willy | 1953-5-27
+
+### after 1st normal form
+
+book_id(primary key) | publisher | title | pub_date |
+--- | --- | --- | --- | --- |
+OSN21329 | Oraley | insight | 1947-4-7
+OSN21132 | Oraley | outsight | 1952-4-15
+OSN21343 | BkTown | brief tour | 1947-4-24
+OSN21124 | Oraley | Great town | 1953-5-27
+
+title | author_id |
+--- | --- |
+OSN21329 | 1
+OSN21329 | 2
+OSN21132 | 1
+OSN21132 | 3
+OSN21343 | 1
+OSN21343 | 4
+OSN21343 | 5
+OSN21124 | 6
+
+author_id(primary key) | author | Age | contry |
+--- | --- | --- | --- |
+1 | Mark | 26 | Ame
+2 | Twin | 32 | Bri
+3 | Town | 31 | France
+4 | Bill | 24 | Ame
+5 | Alan | 37 | Japan
+6 | Willy | 42 | Germany
 
 每个范式（normal form）都先要满足前一个范式
 

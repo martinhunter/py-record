@@ -39,7 +39,7 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 NOTE：规范化不是消除冗余，而是减少冗余。
 
 publisher | title(primary key) | author | pub_date |
-- | - | - | - |
+--- | --- | --- | --- |
 Oraley | insight | Mark,Twin | 1947-4-7
 Oraley | outsight | Mark,Town | 1952-4-15
 BkTown | brief tour | Bill,Twin | 1947-4-24

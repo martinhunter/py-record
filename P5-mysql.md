@@ -38,10 +38,12 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 
 NOTE：规范化不是消除冗余，而是减少冗余。
 
-id | title | author | pub_date |
+publisher | title(primary key) | author | pub_date |
 - | - | - | - |
-1 | insight | Mark Twin | 1947-4-7
-2 | outsight | Mark Town | 1952-4-15 
+Oraley | insight | Mark,Twin | 1947-4-7
+Oraley | outsight | Mark,Town | 1952-4-15
+BkTown | brief tour | Bill,Twin | 1947-4-24
+Oraley | Great town | Mark,Alan,Willy | 1953-5-27
 
 每个范式（normal form）都先要满足前一个范式
 
@@ -50,7 +52,8 @@ id | title | author | pub_date |
     - 1列的数据类型相同
     - 列名不重复
     - 没有重复的组（2个或多个逻辑相关联的列的集合），例如一本书有多个作者，不应创建多个作者列，因为作者是逻辑相关联的，只应创建一个
-    - solve：简单方法在现有表中将1本书的多作者分成多列，复制多次书信息（其他行的），也可将author放入新的字表，创建多对多的关系
+    - solve：简单方法在现有表中将1本书的多作者分成多列，复制多次书信息（其他行的）,但是违反了第二范式
+    - solve2: 也可将author放入新的字表，创建多对多的关系
 - 第二范式
     - 不是部分依赖的，而是完全依赖
         - 依赖性/函数依赖（dependency/function dependency）：表格的所有其他列都通过主键获得,主键外的列并不能推得另外列的值

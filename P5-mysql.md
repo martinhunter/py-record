@@ -466,9 +466,142 @@ group by:相同值的被分为一组,count(sales)会为每一组进行计算
         'sales category'
     order by min(sales) asc; 
 
+hacing: group后会有多个group,having通常对每个group进行操作，以筛选所需的group，因此一般用聚合函数
 
-hacing设置group by 子句的条件，可使用聚合函数
+	select
+		type,count(price) as "pri",
+		avg(price*sales) as 'avg recenue'
+	from titles
+	group by type
+	having avg(price * sales) > 10000
+		and avg(price) > 200;
 
+### 联结
+
+作用:从多个表中检索行并以一张表展现
+
+1. 限定列名 table.column,无歧义且提高性能
+
+`from table_name alias`可设置table别名为alias 
+
+	select au_id,a.city
+		from authors a
+		inner join publishers p
+			on a.city = p.city;
+
+联结类型 | description |
+--- | --- |
+cross join | 显示表1的每行和表2的所有行组合得到的所有行
+inner join | 用比较操作符比较2个表共同列的值，显示与操作符匹配的行
+natural join | 是inner join的一种，使用=比较操作符（不可修改）,只保留1列相同的列（主键列）
+left outer join | 返回左表所有select列的行,右表符合on条件的显示值，否则显示null
+right outer join | 与left outer join相反
+full outer join | 是左右联结的并集
+self-join | 自联结
+
+
+exp:Before
+NOTE:select * 时默认比较主键
+
+class table
+ID | NAME |
+--- | --- |
+1 | abhi
+2 | adam
+3 | anu
+
+class_info table
+ID | Address |
+--- | --- |
+1 | DELHI
+2 | MUMBAI
+3 | CHENNAI
+
+	SELECT * FROM class CROSS JOIN class_info;
+
+ID | NAME | ID | Address |
+--- | --- | --- | --- |
+1 | abhi | 1 | DELHI
+2 | adam | 1 | DELHI
+4 | alex | 1 | DELHI
+1 | abhi | 2 | MUMBAI
+2 | adam | 2 | MUMBAI
+4 | alex | 2 | MUMBAI
+1 | abhi | 3 | CHENNAI
+2 | adam | 3 | CHENNAI
+4 | alex | 3 | CHENNAI
+
+exp:Before
+
+修改 class table为
+ID | NAME |
+--- | --- |
+1 | abhi
+2 | adam
+3 | alex
+4 | anu
+
+	SELECT * from class INNER JOIN class_info
+		where class.id = class_info.id;
+
+ID | NAME | ID | Address |
+--- | --- | --- | --- |
+1 | abhi | 1 | DELHI
+2 | adam | 2 | MUMBAI
+3 | alex | 3 | CHENNAI
+
+	SELECT * from class NATURAL JOIN class_info;
+
+ID | NAME | Address |
+--- | --- | --- |
+1 | abhi | DELHI
+2 | adam | MUMBAI
+3 | alex | CHENNAI
+
+exp:Outer join Before
+
+修改 class table为
+ID | NAME |
+--- | --- |
+1 | abhi
+2 | adam
+3 | alex
+4 | anu
+5 | ashish
+
+修改 class_info table为
+ID | Address |
+--- | --- |
+1 | DELHI
+2 | MUMBAI
+3 | CHENNAI
+7 | NOIDA
+8 | PANIPAT
+
+	SELECT * FROM class 
+		LEFT OUTER JOIN class_info 
+			ON (class.id = class_info.id);
+
+
+ID | NAME | ID | Address |
+--- | --- | --- | --- |
+1 | abhi | 1 | DELHI
+2 | adam | 2 | MUMBAI
+3 | alex | 3 | CHENNAI
+4 | anu | null | null
+5 | ashish | null | null
+
+	SELECT * FROM class FULL OUTER JOIN class_info ON (class.id = class_info.id);
+
+ID | NAME | ID | Address
+--- | --- | --- | --- |
+1 | abhi | 1 | DELHI
+2 | adam | 2 | MUMBAI
+3 | alex | 3 | CHENNAI
+4 | anu | null | null
+5 | ashish | null | null
+null | null | 7 | NOIDA
+null | null | 8 | PANIPAT
 
 
 

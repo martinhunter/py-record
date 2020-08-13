@@ -213,6 +213,7 @@ preset: {A,B}组成候选键,C,D不是主键属性。`A->B`表示B依赖于A,`{A
 
 * 数据类型：INT，CHAR（max_char_number),一般用VARCHAR（动态大小），TEXT（0-65535字节），decimal（5， 2）共存5位数，2位小数
 * 不区分大小写
+* 使用`;`为一个命令结尾
 
 mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 登陆: mysql -u root -p mysql
@@ -233,6 +234,23 @@ mysql图形界面：navicat（解压后删除.navicat64，取消安装wine）
 * 创建数据表: create table [if not exist ]table_name(字段 类型 约束[, 字段 类型 约束]) [select语句];  // int unsigned
 * 删除数据表： drop table table_name
 * 查看表格本身（而非表中数据）的结构： desc table_name;  // desc是describe的缩写？
+
+exp： 创建表格，插入数据实例
+
+    drop table authors;
+    create table authors
+    (
+        au_id char(3) not null,
+        au_fname varchar(15) not null,
+        au_lname varchar(15) not null,
+        phone varchar(12),
+        address varchar(20),
+        city varchar(15),
+        state char(2),
+        zip char(5),
+        constraint pk_authors primary key (au_id)
+        );
+    insert into authors value('A01','Franz','Kafka','','','Österreich-Ungarn','','');
 
 3.修改表格结构（alter）
 * 增加字段： alter table table_name add 字段名 类型及约束；
@@ -260,6 +278,7 @@ update table_name set user_deleted=1 where user_id=13; // 1表示账户已无效
 
 where 条件1 and 条件2;
 where not (条件1 and 条件2);
+
 1. 条件查询： 
 * where 字段=值  -- 表示精确查询
 * where 字段 like 值%  -- 表示模糊查询，%替换1或多个，_替换1个。
@@ -299,6 +318,159 @@ where not (条件1 and 条件2);
 10.子查询(效率较低）
 将查询结果作为另一个查询的条件
 * select * from students where height=(select max(height) from students);
+
+### exp: 查询实例
+
+    select [all|distinct] city as "c",
+            code as "cd",
+            au_name as "an",
+            state
+        from table_country
+        order by 4 [asc | desc],
+                 2 [asc | desc],
+                 an [asc | desc];
+
+默认为all，distinct表示去除重复项
+TODO：测试是否每一列都可用distinct
+
+as起别名后可供order使用
+
+order by 的数字代替select中的列名。也可以输入全名。
+NOTE：可用select的列(此处为c,cd,an,state)之外的列进行排序，但不建议使用
+NOTE：null的排序取决于dbms，mysql与oracle的null排序不同
+
+    select title,price,sales,
+            price * sales As "total"
+        from table_country
+        ORDER BY CASE WHEN cd='213'
+            THEN an ELSE city END;
+
+NOTE:price*sales会相乘并将结果保存为虚拟的新列total（派生列
+NOTE:可将sql关键字都大写以区分关键字。
+
+### 条件筛选
+
+形式： `WHERE col op value;`
+
+    select title,price,sales,pub_date,product_date
+            price * sales As "total"
+        FROM table_country
+        WHERE ((price * sales > 1000)
+            AND (pub_date >= DATE '2003-02-07'))
+            OR (title = "live")
+            OR NOT (title = "fail")
+            OR title LIKE '_ke%'
+            OR product_date BETWEEN DATE '2001-03-08'
+                            AND DATE '2002-03-08';
+
+NOTE：用<>表示不等，而不是！=, 用=表示相等，而不是==
+
+
+NOTE: 最好将语句放在()中
+
+条件 | 等价于 |
+--- | --- |
+not (not p) | p
+not (p and q) | (not p) or (not q)
+not (p or q) | (not p) and (not q)
+
+特殊操作符(<,>,>=之外)：like,between,in,is null
+
+- LIKE进行相似匹配，其value为一个正则字符串,`_`匹配单个字符，`%`匹配任意数量的字符
+	- where col like '%str%'
+NOTE: 必须是date对象才能进行比较，因为2个字符串不能>,<比较
+- between等同于where col>= val1 and col<=val2
+- col in (val1,val2,val2)
+- where col is null
+NOTE: null值不进行任何匹配，>,<,=,<>等都不匹配null值,只有is null能确定是否为null
+
+### 计算操作
+
+    select f_name || ' ' || l_name
+            AS full_name,
+            SUBSTRING(pub_id from 2 for 4)
+            AS "from 2 and select 4 chars",
+            trim(leading 'H' from publisher)
+        FROM authors
+        WHERE EXTRACT(MONTH FROM pubdate)
+            between 6 and 9
+            and pubdate between
+                (current_timestamp - interval 90 day)
+                and (current_timestamp + interval 90 day)
+        order by position('st' in f_name) asc
+
+- `||`连接字符串获得作者全名
+- substring()函数选取部分
+- upper(),lower()修改大小写
+- trim([[leading|trailing|both] ['trim_chars'] from] string/column),
+删除前/后的trim_chars,默认为空格
+- charactr_length()返回字符个数
+- position(string in column)返回字符串第一次出现的位置
+- extract(field from datetime_column_or_interval)提取时间
+- current_date,current_time,current_timestamp获取当前时间,current_time(6)为秒添加6位精度
+- CURRENT_USER为当前用户
+- cast(column as data_type)类型转换
+case同C++中的case
+
+	select
+		condi,
+		price
+		case condi
+			when "good" then price*1.5
+			when "bad" then price*0.8
+			else price
+		END
+			as 'new_price'
+
+- coalesce(state,user 'N/A') as "not_null_col",检测每项是否为空值，都不能匹配则填充最后一个值
+- nullif(exp1,exp2) as "eq is null",exp1,2相等则返回空值，否则返回exp1的值
+
+### 汇总和分组
+
+聚合函数，min,max,sum,avg,count都忽略空值，除了count(*),count返回行数
+
+特性：
+- 聚合表达式不可出现在where语句中
+- select作用域中，仅分组列可混合使用费聚合表达式和聚合表达式
+- 聚合函数不可嵌套（因为聚合函数处理一系列值，返回一个值，再嵌套没有意义）
+
+NOTE：where语句生效之后再进行聚合计算
+
+先distinct column,再进行聚合计算，否则没有意义
+select
+	count(distinct price)
+
+#### 分组
+
+group by:相同值的被分为一组,count(sales)会为每一组进行计算
+想显示多列则都要进行分组，若只group au_id，则pub_id列就不知道该填什么
+
+    select au_id,pub_id count(sales) as "numbooks"
+        from title_authors
+        group by au_id,pub_id
+
+    select 
+        case
+            when sales is null
+                then 'unknown'
+            when sales <= 1000
+                then 'no more than 1000'
+            when sales <= 10000
+                then '1000-10000'
+            else 'over 10000'
+        END
+            as 'sales category'
+        count(*) as 'num titles'
+    from titles
+    group by
+        'sales category'
+    order by min(sales) asc; 
+
+
+hacing设置group by 子句的条件，可使用聚合函数
+
+
+
 
 11.数据库（数据表）设计
 1. 第一范式： 不能再拆分

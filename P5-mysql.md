@@ -299,10 +299,11 @@ where not (条件1 and 条件2);
 
 * select **gender**, sum(age)/group_concat(name, " ", age)[,avg(age)] from table_name where 条件 group by **gender** having avg（age) > 20;  -- group字段为gender，所以前边的字段也要为gender
 
-1. 先用where确定所选内容，
+1. 先用where筛选行，
 2. 使用group按字段中不同的值来分组。
-3. 使用having仅显示符合筛选条件的组(筛选计算后的值）。
+3. 使用having筛选符合条件的组。
 4. 对不同的组都1.求出值，或2.使用group_concat()显示组中的每条数据的字段内容。
+5. 使用on进行联结筛选
 
 7.分页
 * 最后加上 limit 每页显示数量；
@@ -310,7 +311,7 @@ where not (条件1 and 条件2);
 
 8.链接查询（多个表，会显示2个表的内容）
 * select ... from table_1 [left] inner join table_2 on 条件;  // left表示显示table_1中的所有内容，table_2不符合条件的部分显示为null
-* select table_1.字段/*，table2.字段 from table_1 left inner join table_2 on 条件/table_1.字段=table_2.字段 having 字段=null;
+* select table_1.字段/\*，table2.字段 from table_1 left inner join table_2 on 条件/table_1.字段=table_2.字段 having 字段=null;
 
 9.自关联（省市县）
 使用链接查询，将1个表命名为2个别名作为2个表使用
@@ -325,7 +326,7 @@ where not (条件1 and 条件2);
             code as "cd",
             au_name as "an",
             state
-        from table_country
+        from table_country[,table2[,table3]
         order by 4 [asc | desc],
                  2 [asc | desc],
                  an [asc | desc];
@@ -442,7 +443,7 @@ select
 
 #### 分组
 
-group by:相同值的被分为一组,count(sales)会为每一组进行计算
+group by: 相同值的被分为一组,count(sales)会为每一组进行计算
 想显示多列则都要进行分组，若只group au_id，则pub_id列就不知道该填什么
 
     select au_id,pub_id count(sales) as "numbooks"
@@ -466,7 +467,7 @@ group by:相同值的被分为一组,count(sales)会为每一组进行计算
         'sales category'
     order by min(sales) asc; 
 
-hacing: group后会有多个group,having通常对每个group进行操作，以筛选所需的group，因此一般用聚合函数
+having: group后会有多个group,having通常对每个group进行操作，以筛选所需的group，因此一般用聚合函数
 
 	select
 		type,count(price) as "pri",
@@ -478,30 +479,37 @@ hacing: group后会有多个group,having通常对每个group进行操作，以�
 
 ### 联结
 
-作用:从多个表中检索行并以一张表展现
+作用:从多个表中检索行并以一张表展现，可多次使用
 
-1. 限定列名 table.column,无歧义且提高性能
+1. 限定列名 table.column,无歧义且提高性能,on的作用与where相同
 
-`from table_name alias`可设置table别名为alias 
+`from table_name [AS] alias`可设置table别名为alias,加上AS更为清晰
 
 	select au_id,a.city
 		from authors a
 		inner join publishers p
 			on a.city = p.city;
+			
+	select au_id,a.city
+		from authors a
+		inner join publishers p
+			on a.city = p.city
+		inner join titles t
+			on t.title_id = a.title_id;
 
 联结类型 | description |
 --- | --- |
 cross join | 显示表1的每行和表2的所有行组合得到的所有行
-inner join | 用比较操作符比较2个表共同列的值，显示与操作符匹配的行
+inner join | 最常用，用比较操作符比较2个表共同列的值，显示与操作符匹配的行
 natural join | 是inner join的一种，使用=比较操作符（不可修改）,只保留1列相同的列（主键列）
+self-join | 自联结，使用inner join
 left outer join | 返回左表所有select列的行,右表符合on条件的显示值，否则显示null
-right outer join | 与left outer join相反
+right outer join | (outer join至少返回一个行的所有行),与left outer join相反
 full outer join | 是左右联结的并集
-self-join | 自联结
 
+exp: 创建2个基本表格
 
-exp:Before
-NOTE:select * 时默认比较主键
+NOTE: select * 时默认比较主键,且联结时\*表示两张表的所有column
 
 class table
 ID | NAME |
@@ -517,7 +525,10 @@ ID | Address |
 2 | MUMBAI
 3 | CHENNAI
 
-	SELECT * FROM class CROSS JOIN class_info;
+	SELECT * FROM class 
+		CROSS JOIN class_info;
+
+CROSS JOIN 默认会产生m\*n行数据,显示2个表的所有组合，因此通常不用
 
 ID | NAME | ID | Address |
 --- | --- | --- | --- |
@@ -531,7 +542,7 @@ ID | NAME | ID | Address |
 2 | adam | 3 | CHENNAI
 4 | alex | 3 | CHENNAI
 
-exp:Before
+exp: 修改一个表格
 
 修改 class table为
 ID | NAME |
@@ -541,8 +552,9 @@ ID | NAME |
 3 | alex
 4 | anu
 
-	SELECT * from class INNER JOIN class_info
-		where class.id = class_info.id;
+	SELECT * from class
+		INNER JOIN class_info
+			on class.id = class_info.id;
 
 ID | NAME | ID | Address |
 --- | --- | --- | --- |
@@ -558,7 +570,7 @@ ID | NAME | Address |
 2 | adam | MUMBAI
 3 | alex | CHENNAI
 
-exp:Outer join Before
+exp: Outer join，修改2个表格
 
 修改 class table为
 ID | NAME |
@@ -591,7 +603,9 @@ ID | NAME | ID | Address |
 4 | anu | null | null
 5 | ashish | null | null
 
-	SELECT * FROM class FULL OUTER JOIN class_info ON (class.id = class_info.id);
+	SELECT * FROM class 
+		FULL OUTER JOIN class_info 
+			ON (class.id = class_info.id);
 
 ID | NAME | ID | Address
 --- | --- | --- | --- |
@@ -603,8 +617,130 @@ ID | NAME | ID | Address
 null | null | 7 | NOIDA
 null | null | 8 | PANIPAT
 
+exp: 自联结
+
+select
+	e1.emp_name as "employee",
+	e2.emp_name as "Boss"
+from employees e1
+inner join employees e2
+	on e1.boss_id = e2.emp_id;
+	
+### 子查询/内查询
+
+创建一个临时表/列 保存子查询的结果，供外查询（指子查询外的语句）使用
+语法：同普通查询，但以括号包裹，是单个的select语句
+特性：
+- 内联结都可以写作子查询，但不能反过来，因为内联结是可交换的
+- 通常子查询效率高于内联结，但是难以差错
+- 子查询的值也可作为字面常量
+
+常用情况：column可以是列,表达式等
+
+- where column op (subquery)
+- where column [not] in (subquery)
+- where column op all (subquery)  # col > all(subquery) 表示 col > 子查询中的所有值
+- where column op any (subquery)  # col > any(subquery) 表示 col > 子查询中的至少一个值
+- where [not] exists (subquery) # subquery为true，通常用于相关子查询
+
+简单子查询，自行运算，与外查询无关
+
+	select au_id,city
+		from authors
+		where city in
+			(select city
+				from publishers);
+				
+相关子查询
+- 依赖外部查询
+- 为外部查询选择的每一候选执行一次,因此会执行相当多次
+- 总是引用外部查询from子句指定的表
+- 使用限定列名引用外部查询确定下来的值
+
+形式：
+
+	select outer_columns
+		from outer_table
+		where outer_column_value in
+			(select inner_column
+			from inner_table
+			where inner_column = outer_colum)
+				
+exp: cand.type为外部变量
+
+title_id | type | sales | Address
+--- | --- | --- | --- |
+1 | history | 256 | DELHI
+2 | history | 2516 | MUMBAI
+3 | psychology | 732 | CHENNAI
+4 | biography | 4528 | null
+5 | children | 2156 | null
+6 | history | 71113 | NOIDA
+7 | children | 815 | PANIPAT
+8 | history | 22116 | DELHI
+9 | computer | 4724 | MUMBAI
+10 | psychology | 244 | CHENNAI
+11 | biography | 5528 | null
+12 | children | 21556 | null
+13 | history | 6113 | NOIDA
+14 | children | 1815 | PANIPAT
+
+	select
+		cand.title_id,
+		cand.type,
+		cand.sales
+	from titles AS cand
+	where sales>=
+		(select avg(sales)
+		from titles as aver
+		where aver.type = cand.type);
+		
+运行过程：
+1. 先取第一行的cand.type并传入子查询，根据子查询结果判断此行是否符合外查询
+2. 取第二行进行相同操作
+3. 直至最后一行
+4. 因此操作量相当大，应尽量避免使用
+
+NOTE：空值会使子查询变得复杂，子查询可能隐藏对空值的比较（空值是互不相等的）。应对子查询添加where col is not null
 
 
+### 各种方法可以实现等价查询
+
+select distinct a.au_id
+	from authors a
+	inner join title_authors ta
+		on a.au_id = ta.au_id;
+		
+select distinct a.au_id
+	from authors a, title_authors ta
+	where a.au_id = ta.au_id;
+
+select au_id
+	from authors a
+	where au_id in
+		(select au_id
+			from title_authors);
+
+select au_id
+	from authors a
+	where au_id = any
+		(select au_id
+			from title_authors);
+			
+select au_id
+	from authors a
+	where exists
+		(select *
+			from title_authors ta
+			where a.au_id = ta.au_id);
+
+select au_id
+	from authors a
+	where 0 <
+		(select count(\*)
+			from title_authors ta
+			where a.au_id = ta.au_id);
+			
 11.数据库（数据表）设计
 1. 第一范式： 不能再拆分
 2. 第二范式： 表必须有1个主键。没有包含在主键中的列必须完全依赖于主键，而不能只依赖于主键的一部分。

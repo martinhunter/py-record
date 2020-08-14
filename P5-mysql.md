@@ -263,10 +263,10 @@ exp： 创建表格，插入数据实例
 
 4.数据修改（curd：create,update,retrive,delete)
 * 显示整个表格的数据： select \* from table_name [where 字段=值];  //条件也可以是字段>值
-* 插入数据： insert into table_name [(要插入数据的字段1， 字段2， 字段3)] values(具体数值）[,(具体数值)];
+* 插入数据： insert into table_name[(col1,vol2,vol3...)] VALUES (val1,val2,val3...);
 * 修改某一字段的数据： update students set 字段=值[,字段=值] where id=5;
 * 删除数据： delete from table_name where 字段=值;  // 没有where就会删除所有数据
-* **将查询结果插入表格**： insert into table_name [(要插入数据的字段)] select语句；
+* **将查询结果插入表格**： insert into table_name(col1,vol2,vol3...) select语句；
 * **关联修改某一字段的数据**： update table_name as 别名 inner join table_2 on 条件 set 字段=值；
 
 对于一个用户一般只标记已经删除而非真正删除。
@@ -350,6 +350,8 @@ NOTE:price*sales会相乘并将结果保存为虚拟的新列total（派生列
 NOTE:可将sql关键字都大写以区分关键字。
 
 ### 条件筛选
+
+NOTE(*mechanism*):where,having,on等筛选条件的作用，是最早发生的，它们会遍历表格的每一行，并将符合条件的行置入一个临时列表中，共select，order等使用
 
 形式： `WHERE col op value;`
 
@@ -443,7 +445,7 @@ select
 
 #### 分组
 
-group by: 相同值的被分为一组,count(sales)会为每一组进行计算
+group by: group列中相同值的被分为一组,count(sales)会为每一组进行计算
 想显示多列则都要进行分组，若只group au_id，则pub_id列就不知道该填什么
 
     select au_id,pub_id count(sales) as "numbooks"
@@ -477,7 +479,7 @@ having: group后会有多个group,having通常对每个group进行操作，以�
 	having avg(price * sales) > 10000
 		and avg(price) > 200;
 
-### 联结
+## 联结
 
 作用:从多个表中检索行并以一张表展现，可多次使用
 
@@ -706,41 +708,218 @@ NOTE：空值会使子查询变得复杂，子查询可能隐藏对空值的比�
 
 ### 各种方法可以实现等价查询
 
-select distinct a.au_id
-	from authors a
-	inner join title_authors ta
-		on a.au_id = ta.au_id;
+	select distinct a.au_id
+		from authors a
+		inner join title_authors ta
+			on a.au_id = ta.au_id;
+
+	select distinct a.au_id
+		from authors a, title_authors ta
+		where a.au_id = ta.au_id;
+
+	select au_id
+		from authors a
+		where au_id in
+			(select au_id
+				from title_authors);
+
+	select au_id
+		from authors a
+		where au_id = any
+			(select au_id
+				from title_authors);
+
+	select au_id
+		from authors a
+		where exists
+			(select *
+				from title_authors ta
+				where a.au_id = ta.au_id);
+
+	select au_id
+		from authors a
+		where 0 <
+			(select count(\*)
+				from title_authors ta
+				where a.au_id = ta.au_id);
+			
+## 集合操作
+
+> union，instersect,except，默认都返回集合
+
+特性：
+- 对2个select语句进行操作,
+- 它们select的列数量必须相同，且对应类型相同，行数可不同
+- 在最后order by，一般的dbms会选择第一个select的列名，但有些不是如此，因此最好用1,2代替实际列名
+
+运行过程：
+
+1. select后获得表A，表B[，若使用了all,则将所有B行插入表A后就结束]
+2. 获得各自的集合，集合A，集合B
+3. 尝试将集合B的每一行插入集合A
+4. 与A的每一行比较
+5. 若有完全相同的行则忽略，否则就将此B行插入集合A
+
+可理解为python代码：
+	
+	# select_statement1 union select_statement2 转化为
+	
+	column_titles = get_column_titls(select_statement1)
+	# listA,B格式如 [(OBS1230,Auraf),(OBS1130, Beef)...]
+	listA = list(select_statement1)
+	listB = list(select_statement2)
+	def union(listA, listB):
+		setA = set(listA)
+		setB = set(listB)
+		for b in setB:
+			for a in setA:
+				# 完全相同(每一列都相等)则忽略
+				if b != a:
+					setA.append(b)
+					break
+		return setA
+	 full_table = column_titles + union(listA, listB)
+
+exp: union的使用，uinon会删除所有重复项，使用all保留
+
+	select au_id as ids, au_name as "mix author and publisher" FROM authors
+	UNION [ALL]
+	select pub_id, pub_name FROM publishers
+	ORDER BY 1 asc, 2 asc;
+
+au_id | au_name
+--- | --- |
+OBS1230 | Auraf
+OBS1130 | Beef
+OBS1536 | Philo
+OBS1725 | Cryan
+
+pub_id | pub_name
+--- | --- |
+PB210 | ORELEY
+PB130 | PHISHIP
+PB153 | NIOTECH
+PB172 | HILLGER
+
+union后, 此处由于无重复项，因此没有添加all也显示全部项.
+常见用法：
+因此union通常只用来处理同一张表，
+或用来将多张表的聚合计算整合。
+
+ids | mix author and publisher
+--- | --- |
+OBS1230 | Auraf
+OBS1130 | Beef
+OBS1725 | Cryan
+OBS1536 | Philo
+PB172 | HILLGER
+PB153 | NIOTECH
+PB210 | ORELEY
+PB130 | PHISHIP
+
+exp：一个较复杂的示例(此处在select中用case可达到相同效果）
+
+select title_id, type, price,
+	price\*1.1 as "new price"
+from titles
+where type='history'
+UNION
+select title_id, type, price,
+	price\*1.2
+from titles
+where type='psychology'
+UNION
+select title_id, type, price,
+	price\*0.9
+from titles
+where type not in ('hisory',psychology)
+
+### 修改行
+
+#### 插入(值插入和查询插入)
+
+NOTE: 1. 值插入时每次只能插入一行。2. 查询插入则能将所有搜索结果都插入
+
+INSERT INTO authors(
+	au_id,
+	au_fname,
+	au_lname,
+	city)
+VALUES(
+	'A09',
+	'Irene',
+	'Bell',
+	'Mill Valley');
+
+将new_authors_to_add表中符合条件的数据插入到authors表中
+
+INSERT INTO authors(
+	au_id,
+	au_fname,
+	au_lname,
+	city)
+select
+	au_id,
+	au_fname,
+	au_lname,
+	city
+from new_authors_to_add
+where country <> 'USA';
+	
+#### 更新(修改原有值)
+
+UPDATE candies
+	SET price = price *
+		case type
+			when 'sweet' then 1.5
+			when 'sour' then 1.2
+			else 1
+		end
+	where price < 150;
+
+set 和where后的pub_id都是titles.pub_id
+
+UPDATE titles
+	SET pub_id = 
+		(select pub_id
+			from publishers
+			where pub_name = 'Abatis Publishers')
+	where pub_id = 
+	(select pub_id
+		from publishers
+		where pub_name = 'Tenterhooks press');
+	
+DELETE FROM titles
+	WHERE pub_id no in
+		(select pub_id from publishers);
 		
-select distinct a.au_id
-	from authors a, title_authors ta
-	where a.au_id = ta.au_id;
+完全删除表数据（NOTE：不可恢复）
 
-select au_id
-	from authors a
-	where au_id in
-		(select au_id
-			from title_authors);
+TRUNCATE TABLE table_name
 
-select au_id
-	from authors a
-	where au_id = any
-		(select au_id
-			from title_authors);
-			
-select au_id
-	from authors a
-	where exists
-		(select *
-			from title_authors ta
-			where a.au_id = ta.au_id);
+## 修改表
 
-select au_id
-	from authors a
-	where 0 <
-		(select count(\*)
-			from title_authors ta
-			where a.au_id = ta.au_id);
-			
+CREATE TABLE new_pubs
+	(col1 data_type1 [col_constraints1],
+	col2 data_type2 [col_constraints2]
+	[, table_constraints1]
+	[, table_constraints2]
+	);
+
+约束：
+not null
+primary key
+foreign key
+unique
+check(只能插入true的值）
+
+
+
+
+
+
+
+
 11.数据库（数据表）设计
 1. 第一范式： 不能再拆分
 2. 第二范式： 表必须有1个主键。没有包含在主键中的列必须完全依赖于主键，而不能只依赖于主键的一部分。
